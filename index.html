@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แดชบอร์ดเงินเดือน - Payroll System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Prompt', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <nav class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">💼 Payroll System (OOP Mini Project)</h1>
+      <div class="flex gap-2 text-sm">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg bg-indigo-700 font-medium">แดชบอร์ด</a>
+        <a href="add.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">+ เพิ่มพนักงาน</a>
+        <a href="oop.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">🔍 สรุปหลักการ OOP</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <!-- การ์ดสรุปสถิติ 4 ใบ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">พนักงานทั้งหมด</p>
+        <h2 id="total-count" class="text-2xl font-bold text-slate-900 mt-1">0 คน</h2>
+      </div>
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">พนักงานประจำ (Full-Time)</p>
+        <h2 id="ft-count" class="text-2xl font-bold text-indigo-600 mt-1">0 คน</h2>
+      </div>
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">สัญญาจ้าง / ฟรีแลนซ์</p>
+        <h2 id="contract-count" class="text-2xl font-bold text-amber-600 mt-1">0 คน</h2>
+      </div>
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">งบประมาณเงินเดือนสุทธิ</p>
+        <h2 id="total-payroll" class="text-2xl font-bold text-rose-600 mt-1">0.00 บาท</h2>
+      </div>
+    </div>
+
+    <!-- ตารางแสดงรายการพนักงาน -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h3 class="text-lg font-bold">📋 รายการเงินเดือนพนักงาน</h3>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="ค้นหารหัส หรือ ชื่อ..." class="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full sm:w-64">
+          <a href="add.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition whitespace-nowrap">+ เพิ่ม</a>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b text-slate-600 font-semibold">
+              <th class="py-3 px-3">รหัส</th>
+              <th class="py-3 px-3">ชื่อ-นามสกุล</th>
+              <th class="py-3 px-3">ประเภท</th>
+              <th class="py-3 px-3">รายละเอียดการคำนวณ</th>
+              <th class="py-3 px-3 text-right">เงินเดือนสุทธิ</th>
+              <th class="py-3 px-3 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="employee-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    function render(list = payrollManager.getAll()) {
+      const tbody = document.getElementById("employee-table-body");
+      tbody.innerHTML = "";
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">ไม่พบข้อมูลพนักงาน</td></tr>`;
+      } else {
+        list.forEach(emp => {
+          let badgeColor = "bg-indigo-100 text-indigo-700";
+          let typeLabel = "ประจำ (Full-Time)";
+          if (emp instanceof PartTimeEmployee) {
+            badgeColor = "bg-emerald-100 text-emerald-700";
+            typeLabel = "พาร์ทไทม์ (Part-Time)";
+          } else if (emp instanceof ContractEmployee) {
+            badgeColor = "bg-amber-100 text-amber-700";
+            typeLabel = "สัญญาจ้าง (Contract)";
+          }
+
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition";
+          tr.innerHTML = `
+            <td class="py-3 px-3 font-semibold text-slate-700">${emp.getId()}</td>
+            <td class="py-3 px-3 font-medium">${emp.getName()}</td>
+            <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeColor}">${typeLabel}</span></td>
+            <td class="py-3 px-3 text-slate-500 text-xs">${emp.getDetails()}</td>
+            <td class="py-3 px-3 text-right font-bold text-slate-900">${emp.calculateSalary().toLocaleString(undefined, {minimumFractionDigits: 2})} ฿</td>
+            <td class="py-3 px-3 text-center">
+              <button onclick="onDelete('${emp.getId()}')" class="text-rose-500 hover:text-rose-700 text-xs font-medium hover:underline">ลบ</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("total-count").innerText = `${payrollManager.getAll().length} คน`;
+      document.getElementById("ft-count").innerText = `${payrollManager.countByType(FullTimeEmployee)} คน`;
+      document.getElementById("contract-count").innerText = `${payrollManager.countByType(ContractEmployee)} คน`;
+      document.getElementById("total-payroll").innerText = `${payrollManager.calculateTotalBudget().toLocaleString(undefined, {minimumFractionDigits: 2})} บาท`;
+    }
+
+    function onDelete(id) {
+      if (confirm(`คุณต้องการลบพนักงานรหัส ${id} ใช่หรือไม่?`)) {
+        payrollManager.removeEmployee(id);
+        render();
+      }
+    }
+
+    function handleSearch() {
+      const q = document.getElementById("search-input").value.toLowerCase();
+      const filtered = payrollManager.getAll().filter(emp =>
+        emp.getId().toLowerCase().includes(q) || emp.getName().toLowerCase().includes(q)
+      );
+      render(filtered);
+    }
+
+    render();
+  </script>
+</body>
+</html>

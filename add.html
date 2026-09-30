@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เพิ่มพนักงาน - Payroll System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Prompt', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <nav class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">💼 Payroll System</h1>
+      <div class="flex gap-2 text-sm">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">แดชบอร์ด</a>
+        <a href="add.html" class="px-3 py-1.5 rounded-lg bg-indigo-700 font-medium">+ เพิ่มพนักงาน</a>
+        <a href="oop.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">🔍 สรุปหลักการ OOP</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-xl mx-auto px-4 py-10">
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">➕ เพิ่มพนักงานใหม่เข้าสู่ระบบ</h2>
+        <p class="text-sm text-slate-500 mt-1">ข้อมูลจะถูกสร้างเป็น Object และจัดเก็บลง LocalStorage อัตโนมัติ</p>
+      </div>
+
+      <form id="add-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">รหัสพนักงาน</label>
+          <input type="text" id="emp-id" required placeholder="เช่น EMP05" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+          <input type="text" id="emp-name" required placeholder="เช่น นิรันดร์ วัฒนา" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ประเภทพนักงาน (Subclass)</label>
+          <select id="emp-type" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none bg-white" onchange="toggleInputs()">
+            <option value="FullTime">1. พนักงานประจำ (FullTimeEmployee)</option>
+            <option value="PartTime">2. พนักงานพาร์ทไทม์ (PartTimeEmployee)</option>
+            <option value="Contract">3. สัญญาจ้าง/ฟรีแลนซ์ (ContractEmployee)</option>
+          </select>
+        </div>
+
+        <!-- Full-Time -->
+        <div id="box-fulltime">
+          <label class="block text-sm font-medium text-slate-700 mb-1">เงินเดือนประจำ (บาท)</label>
+          <input type="number" id="ft-salary" min="0" placeholder="เช่น 28000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+        </div>
+
+        <!-- Part-Time -->
+        <div id="box-parttime" class="space-y-4 hidden">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ชั่วโมงทำงาน (ชั่วโมง)</label>
+            <input type="number" id="pt-hours" min="0" placeholder="เช่น 40" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ค่าจ้างต่อชั่วโมง (บาท)</label>
+            <input type="number" id="pt-rate" min="0" placeholder="เช่น 120" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Contract -->
+        <div id="box-contract" class="space-y-4 hidden">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อโปรเจกต์ที่รับผิดชอบ</label>
+            <input type="text" id="ct-project" placeholder="เช่น ออกแบบ UI/UX แอปพลิเคชัน" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ค่าจ้างเหมาโปรเจกต์ (บาท)</label>
+            <input type="number" id="ct-fee" min="0" placeholder="เช่น 30000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-4 flex gap-3">
+          <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm shadow transition">
+            บันทึกข้อมูล
+          </button>
+          <a href="index.html" class="px-5 py-2.5 border rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition text-center">
+            ยกเลิก
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    function toggleInputs() {
+      const type = document.getElementById("emp-type").value;
+      document.getElementById("box-fulltime").classList.toggle("hidden", type !== "FullTime");
+      document.getElementById("box-parttime").classList.toggle("hidden", type !== "PartTime");
+      document.getElementById("box-contract").classList.toggle("hidden", type !== "Contract");
+    }
+
+    document.getElementById("add-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const id = document.getElementById("emp-id").value.trim();
+      const name = document.getElementById("emp-name").value.trim();
+      const type = document.getElementById("emp-type").value;
+
+      if (payrollManager.getAll().some(emp => emp.getId() === id)) {
+        alert("รหัสพนักงานนี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น");
+        return;
+      }
+
+      let newEmp;
+      if (type === "FullTime") {
+        const salary = document.getElementById("ft-salary").value;
+        if (!salary) return alert("กรุณากรอกเงินเดือน");
+        newEmp = new FullTimeEmployee(id, name, salary);
+      } else if (type === "PartTime") {
+        const hours = document.getElementById("pt-hours").value;
+        const rate = document.getElementById("pt-rate").value;
+        if (!hours || !rate) return alert("กรุณากรอกชั่วโมงและอัตราค่าจ้าง");
+        newEmp = new PartTimeEmployee(id, name, hours, rate);
+      } else {
+        const project = document.getElementById("ct-project").value;
+        const fee = document.getElementById("ct-fee").value;
+        if (!project || !fee) return alert("กรุณากรอกชื่อโปรเจกต์และค่าจ้าง");
+        newEmp = new ContractEmployee(id, name, fee, project);
+      }
+
+      payrollManager.addEmployee(newEmp);
+      alert("เพิ่มพนักงานสำเร็จ!");
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

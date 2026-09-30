@@ -13,9 +13,11 @@
   <nav class="bg-indigo-600 text-white shadow-md">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
       <h1 class="text-xl font-bold">💼 Payroll System </h1>
-      <div class="flex gap-2 text-sm">
+      <div class="flex gap-2 text-sm items-center">
         <a href="index.html" class="px-3 py-1.5 rounded-lg bg-indigo-700 font-medium">แดชบอร์ด</a>
         <a href="add.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">+ เพิ่มพนักงาน</a>
+        <span id="user-name" class="px-2 text-indigo-100"></span>
+        <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-indigo-800 hover:bg-indigo-900 transition">ออกจากระบบ</button>
       </div>
     </div>
   </nav>
@@ -98,6 +100,7 @@
             <td class="py-3 px-3 text-slate-500 text-xs">${emp.getDetails()}</td>
             <td class="py-3 px-3 text-right font-bold text-slate-900">${emp.calculateSalary().toLocaleString(undefined, {minimumFractionDigits: 2})} ฿</td>
             <td class="py-3 px-3 text-center">
+              <a href="edit.html?id=${encodeURIComponent(emp.getId())}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium hover:underline mr-3">แก้ไข</a>
               <button onclick="onDelete('${emp.getId()}')" class="text-rose-500 hover:text-rose-700 text-xs font-medium hover:underline">ลบ</button>
             </td>
           `;
@@ -126,7 +129,9 @@
       render(filtered);
     }
 
-    render();
+    if (setupNavbar()) {
+      render();
+    }
   </script>
 </body>
 </html>

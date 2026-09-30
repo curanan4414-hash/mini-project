@@ -13,9 +13,11 @@
   <nav class="bg-indigo-600 text-white shadow-md">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
       <h1 class="text-xl font-bold">💼 Payroll System</h1>
-      <div class="flex gap-2 text-sm">
+      <div class="flex gap-2 text-sm items-center">
         <a href="index.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">แดชบอร์ด</a>
         <a href="add.html" class="px-3 py-1.5 rounded-lg bg-indigo-700 font-medium">+ เพิ่มพนักงาน</a>
+        <span id="user-name" class="px-2 text-indigo-100"></span>
+        <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-indigo-800 hover:bg-indigo-900 transition">ออกจากระบบ</button>
       </div>
     </div>
   </nav>
@@ -91,6 +93,8 @@
 
   <script src="app.js"></script>
   <script>
+    setupNavbar(); // ตรวจสอบการล็อกอิน + แสดงชื่อผู้ใช้
+
     function toggleInputs() {
       const type = document.getElementById("emp-type").value;
       document.getElementById("box-fulltime").classList.toggle("hidden", type !== "FullTime");

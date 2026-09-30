@@ -20,9 +20,17 @@ class Employee {
   getName() { return this.#name; }
   getType() { return this.#type; }
 
+  // Setter (ใหม่): แก้ไขชื่อได้ แต่ id และ type ห้ามแก้ (ไม่มี setter)
+  setName(name) { this.#name = name; }
+
   // Abstraction: เมธอดต้นแบบ บังคับให้คลาสลูกต้อง Override
   calculateSalary() {
     throw new Error("เมธอด calculateSalary() ต้องถูกเขียนทับในคลาสลูก");
+  }
+
+  // Abstraction (ใหม่): เมธอดสำหรับแก้ไขข้อมูล คลาสลูกต้อง Override
+  update(data) {
+    throw new Error("เมธอด update() ต้องถูกเขียนทับในคลาสลูก");
   }
 
   getDetails() { return "-"; }
@@ -46,6 +54,12 @@ class FullTimeEmployee extends Employee {
   // Polymorphism: Override เมธอดของคลาสแม่
   calculateSalary() {
     return this.#monthlySalary;
+  }
+
+  // Polymorphism (ใหม่): แก้ไขเฉพาะข้อมูลของพนักงานประจำ
+  update(data) {
+    this.setName(data.name);
+    this.#monthlySalary = Number(data.monthlySalary);
   }
 
   getDetails() {
@@ -75,6 +89,13 @@ class PartTimeEmployee extends Employee {
     return this.#hoursWorked * this.#hourlyRate;
   }
 
+  // Polymorphism (ใหม่)
+  update(data) {
+    this.setName(data.name);
+    this.#hoursWorked = Number(data.hoursWorked);
+    this.#hourlyRate = Number(data.hourlyRate);
+  }
+
   getDetails() {
     return `${this.#hoursWorked} ชม. × ${this.#hourlyRate.toLocaleString()} บ./ชม.`;
   }
@@ -85,7 +106,7 @@ class PartTimeEmployee extends Employee {
 }
 
 // ========================================================
-// 4. คลาสลูก 3: ContractEmployee (คลาสที่ 5 เพื่อให้ครบเกณฑ์ ≥ 5 คลาส)
+// 4. คลาสลูก 3: ContractEmployee
 // ========================================================
 class ContractEmployee extends Employee {
   #projectFee;
@@ -100,6 +121,13 @@ class ContractEmployee extends Employee {
   // Polymorphism: ค่าจ้างเหมาจ่ายตามโปรเจกต์
   calculateSalary() {
     return this.#projectFee;
+  }
+
+  // Polymorphism (ใหม่)
+  update(data) {
+    this.setName(data.name);
+    this.#projectFee = Number(data.projectFee);
+    this.#projectName = data.projectName;
   }
 
   getDetails() {
@@ -162,6 +190,21 @@ class PayrollManager {
     this.saveToStorage();
   }
 
+  // (ใหม่) ค้นหาพนักงานจากรหัส คืนค่า undefined ถ้าไม่พบ
+  findById(id) {
+    return this.#employees.find(emp => emp.getId() === id);
+  }
+
+  // (ใหม่) แก้ไขข้อมูลพนักงาน แล้วบันทึกลง LocalStorage
+  // คืนค่า true ถ้าแก้ไขสำเร็จ, false ถ้าไม่พบรหัสนี้
+  updateEmployee(id, data) {
+    const emp = this.findById(id);
+    if (!emp) return false;
+    emp.update(data); // Polymorphism: แต่ละ subclass แก้ไขข้อมูลของตัวเอง
+    this.saveToStorage();
+    return true;
+  }
+
   getAll() {
     return this.#employees;
   }
@@ -176,5 +219,71 @@ class PayrollManager {
   }
 }
 
+// ========================================================
+// 6. (ใหม่) คลาสจัดการการเข้าสู่ระบบ: AuthService
+// ========================================================
+class AuthService {
+  #users;       // รายชื่อผู้ใช้ (เก็บในโค้ด เพราะโปรเจกต์ไม่ใช้ฐานข้อมูล)
+  #sessionKey;  // ชื่อ key ที่ใช้เก็บสถานะการล็อกอิน
+
+  constructor() {
+    this.#users = [
+      { username: "admin", password: "admin123", displayName: "ผู้ดูแลระบบ" },
+      { username: "hr", password: "hr1234", displayName: "ฝ่ายบุคคล" }
+    ];
+    this.#sessionKey = "payroll_session";
+  }
+
+  // ตรวจสอบ username/password ถ้าถูกต้องให้บันทึก session แล้วคืนค่า true
+  login(username, password) {
+    const user = this.#users.find(u => u.username === username && u.password === password);
+    if (!user) return false;
+    // sessionStorage: ข้อมูลหายเมื่อปิดแท็บ/เบราว์เซอร์
+    sessionStorage.setItem(
+      this.#sessionKey,
+      JSON.stringify({ username: user.username, displayName: user.displayName })
+    );
+    return true;
+  }
+
+  logout() {
+    sessionStorage.removeItem(this.#sessionKey);
+  }
+
+  getCurrentUser() {
+    const raw = sessionStorage.getItem(this.#sessionKey);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  isLoggedIn() {
+    return this.getCurrentUser() !== null;
+  }
+
+  // เรียกในทุกหน้าที่ต้องล็อกอิน ถ้ายังไม่ล็อกอินให้เด้งไปหน้า login
+  requireLogin() {
+    if (!this.isLoggedIn()) {
+      window.location.replace("login.html");
+      return false;
+    }
+    return true;
+  }
+}
+
 // สร้าง Instance กลางสำหรับหน้าเว็บ
 const payrollManager = new PayrollManager();
+const authService = new AuthService();
+
+// ========================================================
+// ฟังก์ชันช่วยสำหรับแถบเมนู (ใช้ร่วมกันทุกหน้า)
+// ========================================================
+function setupNavbar() {
+  if (!authService.requireLogin()) return false;
+  const nameEl = document.getElementById("user-name");
+  if (nameEl) nameEl.innerText = "👤 " + authService.getCurrentUser().displayName;
+  return true;
+}
+
+function logout() {
+  authService.logout();
+  window.location.href = "login.html";
+}

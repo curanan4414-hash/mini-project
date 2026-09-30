@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แก้ไขพนักงาน - Payroll System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Prompt', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <nav class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">💼 Payroll System</h1>
+      <div class="flex gap-2 text-sm items-center">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">แดชบอร์ด</a>
+        <a href="add.html" class="px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition">+ เพิ่มพนักงาน</a>
+        <span id="user-name" class="px-2 text-indigo-100"></span>
+        <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-indigo-800 hover:bg-indigo-900 transition">ออกจากระบบ</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-xl mx-auto px-4 py-10">
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">✏️ แก้ไขข้อมูลพนักงาน</h2>
+        <p class="text-sm text-slate-500 mt-1">รหัสพนักงานและประเภทพนักงานไม่สามารถแก้ไขได้</p>
+      </div>
+
+      <form id="edit-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">รหัสพนักงาน</label>
+          <input type="text" id="emp-id" readonly class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-100 text-slate-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ประเภทพนักงาน</label>
+          <input type="text" id="emp-type-label" readonly class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-100 text-slate-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+          <input type="text" id="emp-name" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+        </div>
+
+        <!-- Full-Time -->
+        <div id="box-fulltime" class="hidden">
+          <label class="block text-sm font-medium text-slate-700 mb-1">เงินเดือนประจำ (บาท)</label>
+          <input type="number" id="ft-salary" min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+        </div>
+
+        <!-- Part-Time -->
+        <div id="box-parttime" class="space-y-4 hidden">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ชั่วโมงทำงาน (ชั่วโมง)</label>
+            <input type="number" id="pt-hours" min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ค่าจ้างต่อชั่วโมง (บาท)</label>
+            <input type="number" id="pt-rate" min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Contract -->
+        <div id="box-contract" class="space-y-4 hidden">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อโปรเจกต์ที่รับผิดชอบ</label>
+            <input type="text" id="ct-project" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">ค่าจ้างเหมาโปรเจกต์ (บาท)</label>
+            <input type="number" id="ct-fee" min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-4 flex gap-3">
+          <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm shadow transition">
+            บันทึกการแก้ไข
+          </button>
+          <a href="index.html" class="px-5 py-2.5 border rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition text-center">
+            ยกเลิก
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    if (setupNavbar()) {
+      // อ่านรหัสพนักงานจาก URL เช่น edit.html?id=EMP01
+      const empId = new URLSearchParams(window.location.search).get("id");
+      const emp = payrollManager.findById(empId);
+
+      if (!emp) {
+        alert("ไม่พบพนักงานรหัสนี้ในระบบ");
+        window.location.replace("index.html");
+      } else {
+        const data = emp.toJSON(); // ดึงข้อมูลปัจจุบันมาใส่ในฟอร์ม
+        const type = emp.getType();
+
+        const typeLabels = {
+          FullTime: "พนักงานประจำ (FullTimeEmployee)",
+          PartTime: "พนักงานพาร์ทไทม์ (PartTimeEmployee)",
+          Contract: "สัญญาจ้าง/ฟรีแลนซ์ (ContractEmployee)"
+        };
+
+        document.getElementById("emp-id").value = data.id;
+        document.getElementById("emp-type-label").value = typeLabels[type];
+        document.getElementById("emp-name").value = data.name;
+
+        // แสดงเฉพาะช่องที่ตรงกับประเภทของพนักงาน
+        document.getElementById("box-fulltime").classList.toggle("hidden", type !== "FullTime");
+        document.getElementById("box-parttime").classList.toggle("hidden", type !== "PartTime");
+        document.getElementById("box-contract").classList.toggle("hidden", type !== "Contract");
+
+        if (type === "FullTime") {
+          document.getElementById("ft-salary").value = data.monthlySalary;
+        } else if (type === "PartTime") {
+          document.getElementById("pt-hours").value = data.hoursWorked;
+          document.getElementById("pt-rate").value = data.hourlyRate;
+        } else {
+          document.getElementById("ct-project").value = data.projectName;
+          document.getElementById("ct-fee").value = data.projectFee;
+        }
+
+        document.getElementById("edit-form").addEventListener("submit", function(e) {
+          e.preventDefault();
+          const name = document.getElementById("emp-name").value.trim();
+          if (!name) return alert("กรุณากรอกชื่อ-นามสกุล");
+
+          let newData = { name };
+
+          if (type === "FullTime") {
+            const salary = document.getElementById("ft-salary").value;
+            if (salary === "") return alert("กรุณากรอกเงินเดือน");
+            newData.monthlySalary = salary;
+          } else if (type === "PartTime") {
+            const hours = document.getElementById("pt-hours").value;
+            const rate = document.getElementById("pt-rate").value;
+            if (hours === "" || rate === "") return alert("กรุณากรอกชั่วโมงและอัตราค่าจ้าง");
+            newData.hoursWorked = hours;
+            newData.hourlyRate = rate;
+          } else {
+            const project = document.getElementById("ct-project").value.trim();
+            const fee = document.getElementById("ct-fee").value;
+            if (!project || fee === "") return alert("กรุณากรอกชื่อโปรเจกต์และค่าจ้าง");
+            newData.projectName = project;
+            newData.projectFee = fee;
+          }
+
+          payrollManager.updateEmployee(empId, newData);
+          alert("แก้ไขข้อมูลสำเร็จ!");
+          window.location.href = "index.html";
+        });
+      }
+    }
+  </script>
+</body>
+</html>
